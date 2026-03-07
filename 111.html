@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOID-OS | OFFICIAL STORE</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        :root { --neon: #ff00ea; --cyber: #00f2ff; --bg: #050505; --card: #111; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .header { text-align: center; margin-bottom: 30px; }
+        .eagle-logo { width: 60px; fill: var(--neon); filter: drop-shadow(0 0 10px var(--neon)); cursor: pointer; }
+        
+        .container { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; max-width: 400px; }
+        
+        .package-card { 
+            background: var(--card); border: 1px solid #222; border-radius: 20px; padding: 25px; 
+            text-align: center; transition: 0.3s; position: relative; overflow: hidden;
+        }
+        
+        .badge { position: absolute; top: 10px; right: -30px; background: var(--neon); color: #fff; font-size: 10px; padding: 5px 40px; transform: rotate(45deg); font-weight: bold; }
+        .price { font-size: 32px; font-weight: 800; color: var(--cyber); margin: 10px 0; }
+        .features { list-style: none; padding: 0; font-size: 13px; color: #aaa; line-height: 2; margin-bottom: 20px; text-align: left; display: inline-block; }
+        .features li::before { content: "• "; color: var(--cyber); }
+
+        .btn-tt { 
+            background: #000; color: #fff; border: 1px solid #333; padding: 15px; 
+            width: 100%; border-radius: 12px; font-weight: bold; cursor: pointer; 
+            text-transform: uppercase; font-size: 12px; display: flex; 
+            align-items: center; justify-content: center; gap: 10px; text-decoration: none;
+        }
+
+        /* ADMIN PANEL (HIDDEN) */
+        #admin-panel { display: none; background: #181818; border: 1px solid var(--neon); padding: 20px; border-radius: 15px; width: 100%; max-width: 360px; margin-bottom: 30px; box-sizing: border-box; }
+        input, textarea { background: #000; border: 1px solid #333; color: #fff; padding: 10px; width: 100%; border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
+        .btn-post { background: var(--neon); color: #fff; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        .footer { margin-top: 40px; font-size: 10px; opacity: 0.4; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <svg class="eagle-logo" onclick="openAdmin()" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2zM12 15.5l-3.5 1.5 3.5-8.5 3.5 8.5-3.5-1.5z"/></svg>
+        <h1 style="margin: 10px 0 5px; letter-spacing: 2px;">VOID-OS STORE</h1>
+        <p style="font-size: 11px; color: var(--cyber);">SECURE CATALOG • ADMIN CONTROL</p>
+    </div>
+
+    <div id="admin-panel">
+        <h3 style="margin:0 0 15px; font-size: 14px; color: var(--neon);">UPLOAD NEW PACKAGE</h3>
+        <input type="text" id="p-name" placeholder="Nama Paket (e.g Agent Access)">
+        <input type="text" id="p-price" placeholder="Harga (e.g 15.000)">
+        <textarea id="p-features" placeholder="Fitur (pisahkan dengan koma, e.g Fitur A, Fitur B, Fitur C)"></textarea>
+        <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; font-size:12px;">
+            <input type="checkbox" id="p-elite" style="width:auto; margin:0;"> Berikan Badge ELITE?
+        </div>
+        <button class="btn-post" onclick="uploadProduct()">PUSH TO CATALOG</button>
+        <button onclick="closeAdmin()" style="background:none; border:none; color:#555; width:100%; margin-top:10px; cursor:pointer; font-size:10px;">CLOSE PANEL</button>
+    </div>
+
+    <div class="container" id="product-list">
+        <p style="text-align:center; opacity:0.5;">Synchronizing with Firebase...</p>
+    </div>
+
+    <div class="footer">
+        DEVELOPED BY KALZ-OS & GEMINI AI<br>
+        Verified Admin: @vin_dipanggil_nengok
+    </div>
+
+<script>
+    const config = { apiKey: "AIzaSyAqdcpcUxfUBNY2H83IBa1Pp0X6YcQtDlQ", databaseURL: "https://theeyes-8d0aa-default-rtdb.asia-southeast1.firebasedatabase.app" };
+    firebase.initializeApp(config); const db = firebase.database();
+
+    // 1. LOGIN ADMIN (Klik Logo Elang)
+    function openAdmin() {
+        const pass = prompt("Enter Dev Key:");
+        if (pass === "111") {
+            document.getElementById('admin-panel').style.display = 'block';
+            window.scrollTo(0,0);
+        } else { alert("ACCESS DENIED."); }
+    }
+
+    function closeAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
+
+    // 2. UPLOAD PRODUK KE FIREBASE
+    function uploadProduct() {
+        const name = document.getElementById('p-name').value;
+        const price = document.getElementById('p-price').value;
+        const features = document.getElementById('p-features').value;
+        const elite = document.getElementById('p-elite').checked;
+
+        if (name && price && features) {
+            db.ref('products').push({
+                name: name,
+                price: price,
+                features: features,
+                elite: elite,
+                t: Date.now()
+            }).then(() => {
+                alert("Produk Berhasil di Upload!");
+                document.querySelectorAll('#admin-panel input, #admin-panel textarea').forEach(i => i.value = "");
+                closeAdmin();
+            });
+        } else { alert("Isi semua data!"); }
+    }
+
+    // 3. TAMPILKAN PRODUK (REAL-TIME)
+    db.ref('products').on('value', snap => {
+        let html = "";
+        snap.forEach(p => {
+            const data = p.val();
+            const key = p.key;
+            html += `
+            <div class="package-card" style="border-color: ${data.elite ? 'var(--neon)' : '#222'}">
+                ${data.elite ? '<div class="badge">ELITE</div>' : ''}
+                <h3 style="margin:0; font-size: 14px;">${data.name}</h3>
+                <div class="price">Rp ${data.price}</div>
+                <ul class="features">
+                    ${data.features.split(',').map(f => `<li>${f.trim()}</li>`).join('')}
+                </ul>
+                <a href="https://www.tiktok.com/@vin_dipanggil_nengok" target="_blank" class="btn-tt">DM TIKTOK UNTUK ORDER</a>
+                ${document.getElementById('admin-panel').style.display === 'block' ? 
+                `<button onclick="deleteProduct('${key}')" style="background:red; color:white; border:none; margin-top:10px; border-radius:4px; padding:5px; font-size:10px; width:100%; cursor:pointer;">DELETE PRODUCT</button>` : ''}
+            </div>`;
+        });
+        document.getElementById('product-list').innerHTML = html || "<p style='text-align:center; opacity:0.3;'>Catalog Empty.</p>";
+    });
+
+    function deleteProduct(key) {
+        if(confirm("Hapus produk ini?")) db.ref('products/' + key).remove();
+    }
+</script>
+</body>
+</html>
