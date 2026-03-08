@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Darkness Store | Minimalist</title>
+    <title>Darkness Store | Admin Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -19,14 +19,19 @@
         }
         .banner h1 { font-size: 20px; letter-spacing: 5px; text-shadow: 0 0 10px var(--red); }
         
-        .admin-trigger { position: absolute; top: 0; right: 0; width: 50px; height: 50px; background: transparent; border: none; }
-        #dev-panel { display: none; background: #050505; border-bottom: 1px solid var(--red); padding: 20px; }
+        /* TOMBOL RAHASIA ADMIN (POJOK KANAN ATAS) */
+        .admin-trigger { position: absolute; top: 0; right: 0; width: 60px; height: 60px; background: transparent; border: none; cursor: pointer; z-index: 10; }
+
+        /* PANEL ADMIN */
+        #dev-panel { display: none; background: #050505; border-bottom: 1px solid var(--red); padding: 20px; box-sizing: border-box; }
+        .dev-header { color: var(--red); font-size: 12px; margin-bottom: 15px; font-weight: bold; text-align: center; }
         
         .container { padding: 15px; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #111; border: 1px solid #222; color: #fff; border-radius: 4px; box-sizing: border-box; }
-        .btn-red { background: var(--red); color: #fff; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #111; border: 1px solid #222; color: #fff; border-radius: 4px; box-sizing: border-box; font-size: 12px; }
+        .btn-red { background: var(--red); color: #fff; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; margin-bottom: 10px; }
+        .btn-close-admin { background: #333; color: #aaa; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 11px; margin-top: 10px; }
 
-        /* GRID TANPA FOTO */
+        /* GRID KATALOG */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .card { 
             background: var(--card); border: 1px solid #1a1a1a; 
@@ -34,12 +39,12 @@
             display: flex; flex-direction: column; justify-content: center;
             min-height: 100px;
         }
-        .name { font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #ccc; text-transform: uppercase; }
+        .name { font-size: 12px; font-weight: bold; margin-bottom: 10px; color: #ccc; text-transform: uppercase; }
         .price { color: var(--red); font-size: 14px; font-weight: 900; margin-bottom: 15px; }
         .btn-buy { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 4px; }
-        .btn-del { display: none; color: #444; font-size: 9px; margin-top: 10px; background: none; border: none; text-decoration: underline; }
+        .btn-del { display: none; color: #444; font-size: 9px; margin-top: 10px; background: none; border: none; text-decoration: underline; width: 100%; }
 
-        /* MODAL */
+        /* MODAL QRIS */
         #qris-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; }
         #qris-img { width: 280px; height: 280px; border: 2px solid #fff; border-radius: 8px; background: #fff; object-fit: contain; }
         
@@ -51,15 +56,19 @@
     <button class="admin-trigger" onclick="unlockDev()"></button>
 
     <div id="dev-panel">
-        <p style="font-size: 10px; color: var(--red);">[ CONFIG ]</p>
-        <input type="text" id="dev-tele" placeholder="Username Telegram (Tanpa @)">
-        <input type="text" id="dev-qris" placeholder="Link QRIS (Contoh: https://i.ibb.co/xxx)">
-        <button class="btn-red" style="background:#222; margin-bottom:20px" onclick="updateSettings()">SAVE CONFIG</button>
+        <div class="dev-header">ADMIN DASHBOARD</div>
         
-        <p style="font-size: 10px; color: var(--red);">[ ADD PRODUCT ]</p>
-        <input type="text" id="p-name" placeholder="Nama Layanan">
+        <input type="text" id="dev-tele" placeholder="User Telegram (Tanpa @)">
+        <input type="text" id="dev-qris" placeholder="Link Direct QRIS (ImgBB)">
+        <button class="btn-red" style="background:#222;" onclick="updateSettings()">SIMPAN KONFIGURASI</button>
+        
+        <hr style="border: 0.5px solid #222; margin: 20px 0;">
+        
+        <input type="text" id="p-name" placeholder="Nama Produk">
         <input type="text" id="p-price" placeholder="Harga">
-        <button class="btn-red" onclick="uploadProduct()">PUSH LIVE</button>
+        <button class="btn-red" onclick="uploadProduct()">PUSH KE KATALOG</button>
+        
+        <button class="btn-close-admin" onclick="closeAdmin()">[ CLOSE & LOCK PANEL ]</button>
     </div>
 
     <div class="banner"><h1>DARKNESS STORE</h1></div>
@@ -70,7 +79,7 @@
 
     <div id="qris-modal">
         <img id="qris-img" src="" alt="QRIS">
-        <button onclick="document.getElementById('qris-modal').style.display='none'" style="margin-top:20px; color:var(--red); background:none; border:none;">[ CLOSE ]</button>
+        <button onclick="document.getElementById('qris-modal').style.display='none'" style="margin-top:20px; color:var(--red); background:none; border:none; font-family: monospace;">[ TUTUP ]</button>
     </div>
 
     <a id="btn-tele" href="#" class="float-contact" target="_blank">💬 AKTIVASI AKUN DARKNESS</a>
@@ -88,20 +97,29 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let isAdmin = false;
+    let isAdminMode = false;
 
+    // Buka Admin
     function unlockDev() {
-        if(prompt("ACCESS KEY:") === "111") {
-            isAdmin = true;
+        if(prompt("PASSWORD ADMIN:") === "111") {
+            isAdminMode = true;
             document.getElementById('dev-panel').style.display = 'block';
             renderProducts();
+            window.scrollTo(0,0);
         }
+    }
+
+    // Tutup Admin
+    function closeAdmin() {
+        isAdminMode = false;
+        document.getElementById('dev-panel').style.display = 'none';
+        renderProducts(); // Refresh biar tombol hapus ilang
     }
 
     function updateSettings() {
         const tele = document.getElementById('dev-tele').value;
         const qris = document.getElementById('dev-qris').value;
-        if(tele && qris) db.ref('settings').update({ tele, qris }).then(() => alert("Settings Updated!"));
+        if(tele && qris) db.ref('settings').update({ tele, qris }).then(() => alert("Setting Berhasil!"));
     }
 
     db.ref('settings').on('value', snap => {
@@ -121,7 +139,7 @@
             db.ref('store_products').push({ name, price }).then(() => {
                 document.getElementById('p-name').value = '';
                 document.getElementById('p-price').value = '';
-                alert("Live!");
+                alert("Produk Live!");
             });
         }
     }
@@ -137,13 +155,14 @@
                     <div class="name">${p.name}</div>
                     <div class="price">Rp ${p.price}</div>
                     <button class="btn-buy" onclick="document.getElementById('qris-modal').style.display='flex'">BELI</button>
-                    <button class="btn-del" onclick="deleteP('${id}')" style="display: ${isAdmin ? 'block' : 'none'}">Hapus</button>
+                    <button class="btn-del" onclick="deleteP('${id}')" style="display: ${isAdminMode ? 'block' : 'none'}">Hapus</button>
                 </div>`;
             }
         });
     }
 
-    function deleteP(id) { if(confirm("Hapus produk?")) db.ref('store_products/' + id).remove(); }
+    function deleteP(id) { if(confirm("Hapus item?")) db.ref('store_products/' + id).remove(); }
+    
     renderProducts();
 </script>
 </body>
