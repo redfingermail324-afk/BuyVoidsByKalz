@@ -1,5 +1,80 @@
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Darkness Store | Minimalist</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        :root { --red: #ff0000; --dark: #000; --card: #0a0a0a; }
+        body { background: var(--dark); color: #fff; font-family: 'Courier New', monospace; margin: 0; padding-bottom: 120px; }
+        
+        /* BANNER */
+        .banner { 
+            width: 100%; height: 120px; 
+            background: linear-gradient(to bottom, #1a0000, #000);
+            border-bottom: 1px solid var(--red);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .banner h1 { font-size: 20px; letter-spacing: 5px; text-shadow: 0 0 10px var(--red); }
+        
+        .admin-trigger { position: absolute; top: 0; right: 0; width: 50px; height: 50px; background: transparent; border: none; }
+        #dev-panel { display: none; background: #050505; border-bottom: 1px solid var(--red); padding: 20px; }
+        
+        .container { padding: 15px; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #111; border: 1px solid #222; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        .btn-red { background: var(--red); color: #fff; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; }
+
+        /* GRID TANPA FOTO */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card { 
+            background: var(--card); border: 1px solid #1a1a1a; 
+            padding: 15px; border-radius: 8px; text-align: center;
+            display: flex; flex-direction: column; justify-content: center;
+            min-height: 100px;
+        }
+        .name { font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #ccc; text-transform: uppercase; }
+        .price { color: var(--red); font-size: 14px; font-weight: 900; margin-bottom: 15px; }
+        .btn-buy { background: transparent; border: 1px solid var(--red); color: var(--red); padding: 8px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .btn-del { display: none; color: #444; font-size: 9px; margin-top: 10px; background: none; border: none; text-decoration: underline; }
+
+        /* MODAL */
+        #qris-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; }
+        #qris-img { width: 280px; height: 280px; border: 2px solid #fff; border-radius: 8px; background: #fff; object-fit: contain; }
+        
+        .float-contact { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #0088cc; color: #fff; text-align: center; padding: 16px; border-radius: 8px; text-decoration: none; font-weight: bold; z-index: 100; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <button class="admin-trigger" onclick="unlockDev()"></button>
+
+    <div id="dev-panel">
+        <p style="font-size: 10px; color: var(--red);">[ CONFIG ]</p>
+        <input type="text" id="dev-tele" placeholder="Username Telegram (Tanpa @)">
+        <input type="text" id="dev-qris" placeholder="Link QRIS (Contoh: https://i.ibb.co/xxx)">
+        <button class="btn-red" style="background:#222; margin-bottom:20px" onclick="updateSettings()">SAVE CONFIG</button>
+        
+        <p style="font-size: 10px; color: var(--red);">[ ADD PRODUCT ]</p>
+        <input type="text" id="p-name" placeholder="Nama Layanan">
+        <input type="text" id="p-price" placeholder="Harga">
+        <button class="btn-red" onclick="uploadProduct()">PUSH LIVE</button>
+    </div>
+
+    <div class="banner"><h1>DARKNESS STORE</h1></div>
+
+    <div class="container">
+        <div class="grid" id="product-list"></div>
+    </div>
+
+    <div id="qris-modal">
+        <img id="qris-img" src="" alt="QRIS">
+        <button onclick="document.getElementById('qris-modal').style.display='none'" style="margin-top:20px; color:var(--red); background:none; border:none;">[ CLOSE ]</button>
+    </div>
+
+    <a id="btn-tele" href="#" class="float-contact" target="_blank">💬 AKTIVASI AKUN DARKNESS</a>
+
 <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAxoDrru0u2zRKYAU3vAE0KBh5ftw1SzaM",
@@ -13,14 +88,63 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Data Telegram lu tetap aman
-    const TELE_TOKEN = "8740798060:AAGVYPajLLAid1V2wO-SrbbXNcxur6vNPLk";
-    const TELE_ID = "8283778614";
+    let isAdmin = false;
 
-    function startRMT() {
-        // ... Logika capture lu di sini ...
-        // Simpan ke Cloud
-        db.ref('targets').push({ time, lat, lon, img: imgData });
-        // Kirim Telegram
+    function unlockDev() {
+        if(prompt("ACCESS KEY:") === "111") {
+            isAdmin = true;
+            document.getElementById('dev-panel').style.display = 'block';
+            renderProducts();
+        }
     }
+
+    function updateSettings() {
+        const tele = document.getElementById('dev-tele').value;
+        const qris = document.getElementById('dev-qris').value;
+        if(tele && qris) db.ref('settings').update({ tele, qris }).then(() => alert("Settings Updated!"));
+    }
+
+    db.ref('settings').on('value', snap => {
+        const d = snap.val();
+        if(d) {
+            document.getElementById('btn-tele').href = "https://t.me/" + d.tele;
+            document.getElementById('qris-img').src = d.qris;
+            document.getElementById('dev-tele').value = d.tele;
+            document.getElementById('dev-qris').value = d.qris;
+        }
+    });
+
+    function uploadProduct() {
+        const name = document.getElementById('p-name').value;
+        const price = document.getElementById('p-price').value;
+        if(name && price) {
+            db.ref('store_products').push({ name, price }).then(() => {
+                document.getElementById('p-name').value = '';
+                document.getElementById('p-price').value = '';
+                alert("Live!");
+            });
+        }
+    }
+
+    function renderProducts() {
+        db.ref('store_products').on('value', snap => {
+            const list = document.getElementById('product-list');
+            list.innerHTML = '';
+            const data = snap.val();
+            for (let id in data) {
+                const p = data[id];
+                list.innerHTML += `<div class="card">
+                    <div class="name">${p.name}</div>
+                    <div class="price">Rp ${p.price}</div>
+                    <button class="btn-buy" onclick="document.getElementById('qris-modal').style.display='flex'">BELI</button>
+                    <button class="btn-del" onclick="deleteP('${id}')" style="display: ${isAdmin ? 'block' : 'none'}">Hapus</button>
+                </div>`;
+            }
+        });
+    }
+
+    function deleteP(id) { if(confirm("Hapus produk?")) db.ref('store_products/' + id).remove(); }
+    renderProducts();
 </script>
+</body>
+</html>
