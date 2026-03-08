@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Darkness Store | Auto Notif</title>
+    <title>Darkness Store | QRIS Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         :root { --red: #ff0000; --dark: #000; --card: #0a0a0a; }
-        body { background: var(--dark); color: #fff; font-family: monospace; margin: 0; padding-bottom: 100px; }
+        body { background: var(--dark); color: #fff; font-family: monospace; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
         
         .banner { width: 100%; height: 80px; background: linear-gradient(180deg, #1a0000, #000); border-bottom: 1px solid var(--red); display: flex; align-items: center; justify-content: center; }
         .banner h1 { font-size: 16px; letter-spacing: 5px; text-shadow: 0 0 10px var(--red); }
 
         .admin-trigger { position: absolute; top: 0; right: 0; width: 50px; height: 50px; background: transparent; border: none; z-index: 10; }
-        #dev-panel { display: none; background: #050505; border-bottom: 1px solid var(--red); padding: 15px; }
+        #dev-panel { display: none; background: #050505; border-bottom: 1px solid var(--red); padding: 15px; box-sizing: border-box; }
 
         .container { padding: 15px; }
         input { width: 100%; padding: 10px; margin-bottom: 8px; background: #111; border: 1px solid #222; color: #fff; border-radius: 4px; box-sizing: border-box; font-size: 11px; }
@@ -23,144 +23,4 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .card { background: var(--card); border: 1px solid #1a1a1a; padding: 15px 10px; border-radius: 6px; text-align: center; }
         .name { font-size: 10px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
-        .price { color: var(--red); font-size: 12px; font-weight: 900; margin-bottom: 10px; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; box-sizing: border-box; }
-        .modal-box { width: 100%; max-width: 300px; text-align: center; }
-        #qris-img { width: 220px; height: 220px; background: #fff; margin: 10px 0; border-radius: 8px; object-fit: contain; }
-        
-        .order-item { background: #111; padding: 10px; border: 1px solid #222; margin-bottom: 10px; font-size: 10px; }
-    </style>
-</head>
-<body>
-
-    <button class="admin-trigger" onclick="unlockDev()"></button>
-
-    <div id="dev-panel">
-        <div style="color:var(--red); font-size:10px;">[ SETTINGS ]</div>
-        <input type="text" id="dev-tele" placeholder="User Tele (Tanpa @)">
-        <input type="text" id="dev-qris" placeholder="Link QRIS (Direct Link)">
-        <button class="btn-red" style="background:#222;" onclick="updateSettings()">SAVE</button>
-        <input type="text" id="p-name" placeholder="Nama Barang">
-        <input type="text" id="p-price" placeholder="Harga">
-        <button class="btn-red" onclick="uploadProduct()">ADD ITEM</button>
-        <div id="pending-list"></div>
-        <button class="btn-red" style="background:#333;" onclick="location.reload()">CLOSE</button>
-    </div>
-
-    <div class="banner"><h1>DARKNESS STORE</h1></div>
-    <div class="container"><div class="grid" id="product-list"></div></div>
-
-    <div id="order-modal" class="modal">
-        <div class="modal-box">
-            <h3 style="color:var(--red); font-size:14px;">ORDER FORM</h3>
-            <p id="order-target" style="font-size:10px; color:#555;"></p>
-            <input type="text" id="u-user" placeholder="Username Akun">
-            <input type="text" id="u-pass" placeholder="Password Akun">
-            <button class="btn-red" onclick="showPayment()">LANJUT BAYAR</button>
-            <button onclick="closeModal('order-modal')" style="color:grey; background:none; border:none; font-size:10px;">BATAL</button>
-        </div>
-    </div>
-
-    <div id="pay-modal" class="modal">
-        <div class="modal-box">
-            <h3 style="color:var(--red); font-size:14px;">PEMBAYARAN QRIS</h3>
-            <div id="pay-price" style="font-size:20px; font-weight:900; color:var(--red); margin-bottom:10px;"></div>
-            <img id="qris-img" src="" alt="QRIS">
-            <p style="font-size:9px; color:#444;">1. Scan & Bayar<br>2. Klik Tombol Konfirmasi<br>3. Kirim Bukti Transfer ke Admin</p>
-            <button class="btn-red" onclick="finalSubmit()">KONFIRMASI SEKARANG</button>
-        </div>
-    </div>
-
-<script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAxoDrru0u2zRKYAU3vAE0KBh5ftw1SzaM",
-      authDomain: "database-me-40ff4.firebaseapp.com",
-      databaseURL: "https://database-me-40ff4-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "database-me-40ff4",
-      storageBucket: "database-me-40ff4.firebasestorage.app",
-      messagingSenderId: "80099598743",
-      appId: "1:80099598743:web:a91e1ee54c14a84d62a4d2"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // DATA BOT LU
-    const BOT_TOKEN = "8697794363:AAHLeNQf3OaYJY8JhYrNTuO6ZUPrWE-mga8";
-    const CHAT_ID = "8283778614";
-
-    let selName = "", selPrice = "";
-
-    function unlockDev() { if(prompt("PASS:") === "111") document.getElementById('dev-panel').style.display='block'; }
-
-    db.ref('settings').on('value', s => {
-        const d = s.val(); if(d) {
-            document.getElementById('qris-img').src = d.qris;
-            document.getElementById('dev-tele').value = d.tele;
-            document.getElementById('dev-qris').value = d.qris;
-        }
-    });
-
-    function updateSettings() {
-        const tele = document.getElementById('dev-tele').value;
-        const qris = document.getElementById('dev-qris').value;
-        db.ref('settings').update({ tele, qris }).then(() => alert("Saved!"));
-    }
-
-    function uploadProduct() {
-        const name = document.getElementById('p-name').value;
-        const price = document.getElementById('p-price').value;
-        if(name && price) db.ref('store_products').push({ name, price }).then(() => alert("Live!"));
-    }
-
-    db.ref('store_products').on('value', s => {
-        const list = document.getElementById('product-list');
-        list.innerHTML = '';
-        const data = s.val();
-        for (let id in data) {
-            const p = data[id];
-            list.innerHTML += `<div class="card">
-                <div class="name">${p.name}</div><div class="price">Rp ${p.price}</div>
-                <button class="btn-red" style="font-size:9px;" onclick="openOrder('${p.name}', '${p.price}')">BELI</button>
-            </div>`;
-        }
-    });
-
-    function openOrder(n, p) {
-        selName = n; selPrice = p;
-        document.getElementById('order-target').innerText = "Item: " + n;
-        document.getElementById('order-modal').style.display = 'flex';
-    }
-
-    function showPayment() {
-        if(document.getElementById('u-user').value && document.getElementById('u-pass').value) {
-            document.getElementById('order-modal').style.display = 'none';
-            document.getElementById('pay-price').innerText = "Rp " + selPrice;
-            document.getElementById('pay-modal').style.display = 'flex';
-        } else { alert("Isi data!"); }
-    }
-
-    function finalSubmit() {
-        const user = document.getElementById('u-user').value;
-        const pass = document.getElementById('u-pass').value;
-        const teleAdmin = document.getElementById('dev-tele').value || "fajar_dev";
-
-        // 1. KIRIM NOTIF KE BOT TELEGRAM
-        const msg = `🚀 *PESANAN PENDING*\n----------\n📦 *Item:* ${selName}\n💰 *Harga:* Rp ${selPrice}\n👤 *User:* \`${user}\` \n🔑 *Pass:* \`${pass}\` \n----------\n⚠️ Segera cek bukti transfer!`;
-        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
-
-        // 2. SIMPAN ARSIP FIREBASE
-        db.ref('orders').push({ item: selName, price: selPrice, user, pass, time: new Date().toLocaleString() });
-
-        // 3. ARAHKAN USER KIRIM BUKTI KE TELE PRIBADI
-        const waText = `Halo Admin, saya order ${selName}. Ini bukti transfernya.`;
-        window.open(`https://t.me/${teleAdmin}?text=${encodeURIComponent(waText)}`, '_blank');
-
-        alert("Berhasil! Silahkan kirim bukti bayar di Telegram.");
-        location.reload();
-    }
-
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-</script>
-</body>
-</html>
+        .price { color: var(--red); font-size: 12px; font-weight: 900; margin-bottom: 1
